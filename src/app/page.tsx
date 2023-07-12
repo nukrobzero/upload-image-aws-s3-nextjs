@@ -5,11 +5,10 @@ import { useState } from "react";
 
 export default function Home() {
   const [image, setImage] = useState<string>("");
-  const handdelUpload = async (files: any) => {
+  const [imageName, setImageName] = useState<string>("");
+  const handelUpload = async (files: any) => {
     const file = files[0];
-    const filename = file.name;
-    const fileType = file.type;
-
+    console.log(file);
     const formData = new FormData();
     formData.append("uploadImage", file);
 
@@ -18,35 +17,55 @@ export default function Home() {
       body: formData,
     });
 
-    const { url } = await res.json();
-    const upload = await fetch(url, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": fileType },
-    });
-    if (upload.ok) {
-      console.log("Uploaded successfully!");
-      const s3FileUrl = `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
-      console.log("File URL", s3FileUrl);
-      setImage(s3FileUrl);
-    } else {
-      console.error("Upload failed.");
+    const data = await res.json();
+
+    setImage(data.url);
+    setImageName(data.filename);
+  };
+
+  const handelDelete = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("DeleteImage", imageName);
+      const res = await fetch(`http://localhost:3000/api/upload`, {
+        method: "DELETE",
+        body: formData,
+      });
+      if (res.ok) {
+        setImage("");
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
   console.log(image);
   return (
     <div className="flex flex-col justify-center items-center h-screen space-y-10 bg-gray-900">
-      <input type="file" onChange={(e) => handdelUpload(e.target.files)} className="pt-6" />
+      <input
+        type="file"
+        onChange={(e) => handelUpload(e.target.files)}
+        className="pt-6"
+        required
+      />
       {image && (
-        <Image
-          src={image}
-          width={600}
-          height={600}
-          alt="uploadimg"
-          layout="responsive"
-          style={{objectFit:"scale-down"}}
-          className="!w-[600px] !h-[600px] border rounded-sm"
-        />
+        <div className="flex flex-col justify-center items-center space-y-4">
+          <Image
+            src={image}
+            width={600}
+            height={600}
+            alt="uploadimg"
+            layout="responsive"
+            style={{ objectFit: "scale-down" }}
+            className="!w-[400px] !h-[400px] border rounded-sm"
+          />
+          <button
+            type="button"
+            onClick={handelDelete}
+            className="p-4 bg-blue-700 hover:bg-blue-500 rounded-md"
+          >
+            Delete
+          </button>
+        </div>
       )}
     </div>
   );
