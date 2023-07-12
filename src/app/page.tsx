@@ -7,20 +7,28 @@ export default function Home() {
   const [image, setImage] = useState<string>("");
   const [imageName, setImageName] = useState<string>("");
   const handelUpload = async (files: any) => {
-    const file = files[0];
-    console.log(file);
-    const formData = new FormData();
-    formData.append("uploadImage", file);
+    if (files.length === 0) return;
+    try {
+      const file = files[0];
+      const formData = new FormData();
+      formData.append("uploadImage", file);
 
-    const res = await fetch(`http://localhost:3000/api/upload`, {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch(`http://localhost:3000/api/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
-
-    setImage(data.url);
-    setImageName(data.filename);
+      if (res.ok) {
+        const data = await res.json();
+        setImage(data.url);
+        setImageName(data.filename);
+      } else {
+        setImage("");
+        setImageName("");
+      }
+    } catch (error) {
+      return;
+    }
   };
 
   const handelDelete = async () => {
@@ -38,7 +46,7 @@ export default function Home() {
       console.error(error);
     }
   };
-  console.log(image);
+
   return (
     <div className="flex flex-col justify-center items-center h-screen space-y-10 bg-gray-900">
       <input

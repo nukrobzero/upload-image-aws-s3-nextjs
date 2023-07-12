@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import S3 from "aws-sdk/clients/s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: Request) {
@@ -11,18 +16,21 @@ export async function POST(request: Request) {
     //@ts-ignore
     const fileType = file.type;
 
-    const s3 = new S3({
-      signatureVersion: "v4",
+    const client = new S3Client({
       region: process.env.AWS_REGION,
-      accessKeyId: process.env.ACCESS_KEY,
-      secretAccessKey: process.env.SECRET_KEY,
+      credentials: {
+        accessKeyId: `${process.env.ACCESS_KEY}`,
+        secretAccessKey: `${process.env.SECRET_KEY}`,
+      },
     });
 
-    const preSignedUrl = await s3.getSignedUrl("putObject", {
+    const command = new PutObjectCommand({
       Bucket: process.env.BUCKET_NAME,
       Key: fileName,
       ContentType: fileType,
-      Expires: 5 * 60,
+    });
+    const preSignedUrl = await getSignedUrl(client, command, {
+      expiresIn: 5 * 60,
     });
 
     const upload = await fetch(preSignedUrl, {
@@ -54,16 +62,17 @@ export async function DELETE(request: Request) {
     const getFile = await request.formData();
     const fileName = getFile.get("DeleteImage") as string;
     const bucket = process.env.BUCKET_NAME as string;
-
-    const s3 = new S3({
-      signatureVersion: "v4",
+    const client = new S3Client({
       region: process.env.AWS_REGION,
-      accessKeyId: process.env.ACCESS_KEY,
-      secretAccessKey: process.env.SECRET_KEY,
+      credentials: {
+        accessKeyId: `${process.env.ACCESS_KEY}`,
+        secretAccessKey: `${process.env.SECRET_KEY}`,
+      },
     });
 
-    await s3.deleteObject({ Bucket: bucket, Key: fileName }).promise();
-
+    const command = new DeleteObjectCommand({ Bucket: bucket, Key: fileName });
+    await client.send(command);
+    
     return NextResponse.json(
       { message: "File deleted successfully" },
       { status: 200 }
