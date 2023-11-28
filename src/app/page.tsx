@@ -39,7 +39,6 @@ export default function Home() {
         setIsLoading(false);
       }
     } catch (error) {
-      setIsLoading(false);
       console.error(error);
     }
   };
@@ -58,7 +57,6 @@ export default function Home() {
         setIsLoading(false);
       }
     } catch (error) {
-      setIsLoading(false);
       console.error(error);
     }
   };
