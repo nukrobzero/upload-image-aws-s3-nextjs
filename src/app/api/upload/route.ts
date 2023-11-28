@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   S3Client,
   PutObjectCommand,
@@ -6,7 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const getFile = await request.formData();
     const file = getFile.get("uploadImage") as File;
