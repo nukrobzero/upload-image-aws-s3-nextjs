@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      `${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com`,
+    remotePatterns: [
+      {
+        hostname: `${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com`,
+      },
     ],
   },
   env: {

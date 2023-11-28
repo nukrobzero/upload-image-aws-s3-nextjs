@@ -75,15 +75,14 @@ export default function Home() {
       )}
       {image && (
         <div className="flex flex-col justify-center items-center space-y-4">
-          <Image
-            src={image}
-            width={600}
-            height={600}
-            alt="uploadimg"
-            layout="responsive"
-            style={{ objectFit: "scale-down" }}
-            className="!w-[400px] !h-[400px] border rounded-sm"
-          />
+          <div className="relative w-[800px] h-[400px] aspect-video border rounded-sm">
+            <Image
+              src={image}
+              fill
+              alt="uploadimg"
+              className="object-cover static"
+            />
+          </div>
           <button
             type="button"
             onClick={handelDelete}
